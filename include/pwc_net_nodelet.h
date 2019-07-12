@@ -17,7 +17,7 @@
 
 namespace pwc_net {
 
-class PWCNetNodelet : nodelet::Nodelet {
+class PWCNetNodelet : public nodelet::Nodelet {
 private:
   /**
    * @brief Name of package which contains this nodelet
