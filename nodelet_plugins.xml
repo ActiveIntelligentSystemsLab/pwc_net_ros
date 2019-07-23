@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 
-<library path="lib/libpwc_net_nodelet">
-  <class name="pwc_net/PWCNetNodelet" type="pwc_net::PWCNetNodelet" base_class_type="nodelet::Nodelet">
+<library path="lib/libpwc_net">
+  <class name="pwc_net/pwc_net" type="pwc_net::PWCNetNodelet" base_class_type="nodelet::Nodelet">
   <description>
     A Nodelet estimates optical flow by PWC-Net
   </description>

@@ -23,14 +23,17 @@ include_directories(
   /usr/local/cuda-10.0/targets/x86_64-linux/include
 )
 
-add_library(pwc_net_nodelet
+add_library(${PROJECT_NAME}
   src/${PROJECT_NAME}/pwc_net_nodelet.cpp
 )
 
-add_dependencies(pwc_net_nodelet ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
-target_link_libraries(pwc_net_nodelet
+target_link_libraries(${PROJECT_NAME}
   ${catkin_LIBRARIES}
   ${OpenCV_LIBRARIES}
   /home/fujimoto/Desktop/flownet2/build/lib/libcaffe.so
 )
+
+add_executable(pwc_net_node src/pwc_net_node.cpp)
+target_link_libraries(pwc_net_node ${catkin_LIBRARIES})
