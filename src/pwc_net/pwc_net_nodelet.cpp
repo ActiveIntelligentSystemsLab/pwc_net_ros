@@ -107,7 +107,7 @@ void PWCNetNodelet::initializeNetwork() {
   replacement_map.emplace("$TARGET_WIDTH", std::to_string(target_width_));
   replacement_map.emplace("$TARGET_HEIGHT", std::to_string(target_height_));
   replacement_map.emplace("$SCALE_WIDTH", std::to_string(1.0 * target_width_ / adapted_width_));
-  replacement_map.emplace("$SCALE_HEIGHT", std::to_string(1.0 * target_width_ / adapted_height_));
+  replacement_map.emplace("$SCALE_HEIGHT", std::to_string(1.0 * target_height_ / adapted_height_));
 
   for (std::string line; std::getline(template_ifstream, line);) {
     for (auto iterator = replacement_map.begin(); iterator != replacement_map.end(); iterator++) {
