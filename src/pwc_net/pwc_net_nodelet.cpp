@@ -45,8 +45,8 @@ void PWCNetNodelet::imageCallback(const sensor_msgs::ImageConstPtr& image_msg) {
     target_width_ = current_image.cols;
     target_height_ = current_image.rows;
 
-    adapted_width_ = static_cast<int>(std::ceil(target_width_ / RESOLUTION_DIVISOR_ * scale_ratio_) / RESOLUTION_DIVISOR_);
-    adapted_height_ = static_cast<int>(std::ceil(target_height_ / RESOLUTION_DIVISOR_ * scale_ratio_) / RESOLUTION_DIVISOR_);
+    adapted_width_ = static_cast<int>(std::ceil(target_width_ / RESOLUTION_DIVISOR_ * scale_ratio_) * RESOLUTION_DIVISOR_);
+    adapted_height_ = static_cast<int>(std::ceil(target_height_ / RESOLUTION_DIVISOR_ * scale_ratio_) * RESOLUTION_DIVISOR_);
 
     initializeNetwork();
   }
