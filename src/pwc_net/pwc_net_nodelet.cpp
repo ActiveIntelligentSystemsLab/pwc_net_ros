@@ -91,7 +91,7 @@ void PWCNetNodelet::initializeNetwork() {
     exit(EXIT_FAILURE);
   }
 
-  std::string temporary_model_file = package_path + "/model/tmp/tmp_model_file.prototext";
+  std::string temporary_model_file = package_path + "/model/tmp/tmp_model_file.prototxt";
   NODELET_INFO_STREAM("Generate temporary model file: " << temporary_model_file);
 
   std::ofstream temporary_ofstream(temporary_model_file);
