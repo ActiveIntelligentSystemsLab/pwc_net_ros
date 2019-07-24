@@ -91,13 +91,7 @@ void PWCNetNodelet::imageCallback(const sensor_msgs::ImageConstPtr& image_msg) {
 
   if (!net_) {
     NODELET_INFO("First image is received and network initialization begins using it's size");
-    target_width_ = current_image.cols;
-    target_height_ = current_image.rows;
-
-    adapted_width_ = static_cast<int>(std::ceil(target_width_ / RESOLUTION_DIVISOR_ * scale_ratio_) * RESOLUTION_DIVISOR_);
-    adapted_height_ = static_cast<int>(std::ceil(target_height_ / RESOLUTION_DIVISOR_ * scale_ratio_) * RESOLUTION_DIVISOR_);
-
-    initializeNetwork();
+    initializeNetwork(current_image.cols, current_image.rows);
   }
 
   if (current_image.cols != target_width_ || current_image.rows != target_height_) {
@@ -120,7 +114,12 @@ void PWCNetNodelet::imageCallback(const sensor_msgs::ImageConstPtr& image_msg) {
   previous_stamp_ = image_msg->header.stamp;
 }
 
-void PWCNetNodelet::initializeNetwork() {
+void PWCNetNodelet::initializeNetwork(int image_width, int image_height) {
+  target_width_ = image_width;
+  target_height_ = image_height;
+  adapted_width_ = static_cast<int>(std::ceil(target_width_ / RESOLUTION_DIVISOR_ * scale_ratio_) * RESOLUTION_DIVISOR_);
+  adapted_height_ = static_cast<int>(std::ceil(target_height_ / RESOLUTION_DIVISOR_ * scale_ratio_) * RESOLUTION_DIVISOR_);
+
   std::string package_path = ros::package::getPath(PACKAGE_NAME_);
   if (package_path.empty()) {
     NODELET_FATAL_STREAM("Package not found: " << PACKAGE_NAME_);

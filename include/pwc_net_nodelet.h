@@ -102,8 +102,11 @@ private:
 
   /**
    * @brief Initialize network model
+   * 
+   * @param image_width Width of input images
+   * @param image_height Height of input images
    */
-  void initializeNetwork();
+  void initializeNetwork(int image_width, int image_height);
   
   /**
    * @brief Publish optical flow msg from output of network
