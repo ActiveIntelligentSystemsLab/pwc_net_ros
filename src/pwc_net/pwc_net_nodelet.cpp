@@ -123,7 +123,8 @@ void PWCNetNodelet::initializeNetwork() {
       line += "\n";
       temporary_ofstream.write(line.c_str(), static_cast<long>(line.length()));
     }
-  }
+  template_ifstream.close();
+  temporary_ofstream.close();
 
   NODELET_INFO("Loading temporary model file");
   
