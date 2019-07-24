@@ -34,7 +34,7 @@ private:
   /**
    * @brief Output blob
    */
-  const std::string OUTPUT_BLOB_ = "img1";
+  const std::string OUTPUT_BLOB_ = "predict_flow_final";
   /**
    * @brief Used to resize input images. Network require that input image width and height are multiples of this number.
    */
