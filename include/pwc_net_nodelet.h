@@ -6,6 +6,7 @@
 #include <nodelet/nodelet.h>
 #include <optical_flow_msgs/DenseOpticalFlow.h>
 #include <sensor_msgs/Image.h>
+#include <std_msgs/Header.h>
 
 #include <caffe/caffe.hpp>
 #include <caffe/layers/input_layer.hpp>
@@ -102,6 +103,13 @@ private:
    * @brief Initialize network model
    */
   void initializeNetwork();
+  
+  /**
+   * @brief Publish optical flow msg from output of network
+   * 
+   * @param current_image_header Header of current image msg
+   */
+  void publishOpticalFlow(const std_msgs::Header& current_image_header);
 };
 
 } // end of pwc_net namespace

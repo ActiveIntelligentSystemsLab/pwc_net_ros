@@ -80,30 +80,7 @@ void PWCNetNodelet::imageCallback(const sensor_msgs::ImageConstPtr& image_msg) {
 
     net_->Forward();
 
-    const boost::shared_ptr<caffe::Blob<d_type_>> output_blob = net_->blob_by_name(OUTPUT_BLOB_);
-
-    optical_flow_msgs::DenseOpticalFlow flow_msg;
-    flow_msg.header.frame_id = image_msg->header.frame_id;
-    flow_msg.header.stamp = image_msg->header.stamp;
-    flow_msg.previous_stamp = previous_stamp_;
-
-    flow_msg.width = output_blob->shape(3);
-    flow_msg.height = output_blob->shape(2);
-
-    size_t flow_num = flow_msg.width * flow_msg.height;
-    flow_msg.invalid_map.resize(flow_num, false);
-    flow_msg.flow_field.resize(flow_num);
-
-    const float *flow_x = output_blob->cpu_data();
-    const float *flow_y = flow_x + flow_num;
-
-    for (int i = 0; i < flow_num; i++) {
-      optical_flow_msgs::PixelDisplacement& flow_at_point = flow_msg.flow_field[i];
-      flow_at_point.x = flow_x[i];
-      flow_at_point.y = flow_y[i];
-    }
-
-    flow_publisher_.publish(flow_msg);
+    publishOpticalFlow(image_msg->header);
   }
   
   current_image.copyTo(previous_image_);
@@ -174,6 +151,33 @@ void PWCNetNodelet::initializeNetwork() {
   caffe::Caffe::set_mode(caffe::Caffe::GPU);
 
   NODELET_INFO_STREAM("Network initialization is finished");
+}
+
+void PWCNetNodelet::publishOpticalFlow(const std_msgs::Header& current_image_header) {
+  const boost::shared_ptr<caffe::Blob<d_type_>> output_blob = net_->blob_by_name(OUTPUT_BLOB_);
+
+  optical_flow_msgs::DenseOpticalFlow flow_msg;
+  flow_msg.header.frame_id = current_image_header.frame_id;
+  flow_msg.header.stamp = current_image_header.stamp;
+  flow_msg.previous_stamp = previous_stamp_;
+
+  flow_msg.width = output_blob->shape(3);
+  flow_msg.height = output_blob->shape(2);
+
+  size_t flow_num = flow_msg.width * flow_msg.height;
+  flow_msg.invalid_map.resize(flow_num, false);
+  flow_msg.flow_field.resize(flow_num);
+
+  const float *flow_x = output_blob->cpu_data();
+  const float *flow_y = flow_x + flow_num;
+
+  for (int i = 0; i < flow_num; i++) {
+    optical_flow_msgs::PixelDisplacement& flow_at_point = flow_msg.flow_field[i];
+    flow_at_point.x = flow_x[i];
+    flow_at_point.y = flow_y[i];
+  }
+
+  flow_publisher_.publish(flow_msg);
 }
 
 }
