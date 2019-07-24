@@ -2,7 +2,6 @@ layer {
   name: "Image1"
   type: "Input"
   top: "img0"
-  top: "dummy1"
   input_param {
     shape: { dim: 1 dim: 3 dim: $TARGET_HEIGHT dim: $TARGET_WIDTH }
   }
@@ -11,24 +10,10 @@ layer {
   name: "Image2"
   type: "Input"
   top: "img1"
-  top: "dummy2"
   input_param {
     shape: { dim: 1 dim: 3 dim: $TARGET_HEIGHT dim: $TARGET_WIDTH }
   }
 }
-
-layer {
-  name: "dummy1" 
-  type: "Silence" 
-  bottom: "dummy1" 
-}
-
-layer {
-  name: "dummy2"
-  type: "Silence"
-  bottom: "dummy2"
-}
-
 
 layer {
   name: "Eltwise2"
