@@ -23,8 +23,9 @@ void PWCNetNodelet::onInit() {
 
   caffe::Caffe::set_mode(caffe::Caffe::GPU);
 
+  std::string image_topic = node_handle.resolveName("image");
   image_transport_.reset(new image_transport::ImageTransport(node_handle));
-  image_subscriber_ = image_transport_->subscribe("input_image", 1, &PWCNetNodelet::imageCallback, this);
+  image_subscriber_ = image_transport_->subscribe(image_topic, 1, &PWCNetNodelet::imageCallback, this);
   
   flow_publisher_ = private_node_handle.advertise<optical_flow_msgs::DenseOpticalFlow>("optical_flow", 1);
 }
