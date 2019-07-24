@@ -79,7 +79,6 @@ void PWCNetNodelet::imageCallback(const sensor_msgs::ImageConstPtr& image_msg) {
     memcpy(dest, test[2].ptr<float>(), target_height_*target_width_*sizeof(float));
 
     const boost::shared_ptr<caffe::Blob<d_type_>> blob = net_->blob_by_name("img0");
-    NODELET_INFO_STREAM("test" << blob->shape(0) << blob->shape(1) << blob->shape(2) << blob->shape(3));
 
     net_->Forward();
 
