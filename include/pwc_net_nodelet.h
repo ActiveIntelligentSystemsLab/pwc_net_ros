@@ -86,13 +86,6 @@ private:
   void onInit();
 
   /**
-   * @brief Convert cv::Mat to input layer of network
-   * 
-   * @param current_image 
-   */
-  void convertImagesToNetworkInput(const cv::Mat& current_image);
-
-  /**
    * @brief Generate temporary model file from template
    * Template model file is contain some variable so replace them to real number
    * 
@@ -118,6 +111,13 @@ private:
    * @param current_image_header Header of current image msg
    */
   void publishOpticalFlow(const std_msgs::Header& current_image_header);
+
+  /**
+   * @brief Set current/previous images to input layer of network
+   * 
+   * @param current_image Current image 
+   */
+  void setImagesToInputLayer(const cv::Mat& current_image);
 };
 
 } // end of pwc_net namespace

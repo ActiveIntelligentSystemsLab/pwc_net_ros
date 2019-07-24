@@ -111,26 +111,8 @@ void PWCNetNodelet::imageCallback(const sensor_msgs::ImageConstPtr& image_msg) {
   current_image.convertTo(current_image, CV_32FC3);
 
   if (!previous_image_.empty()) {
-    std::vector<cv::Mat> test;
-    cv::split(previous_image_, test);
-
-    float *dest = net_->blob_by_name(INPUT_BLOB_PREVIOUS_)->mutable_cpu_data();
-    memcpy(dest, test[0].ptr<float>(), target_height_*target_width_*sizeof(float));
-    dest += target_height_*target_width_;
-    memcpy(dest, test[1].ptr<float>(), target_height_*target_width_*sizeof(float));
-    dest += target_height_*target_width_;
-    memcpy(dest, test[2].ptr<float>(), target_height_*target_width_*sizeof(float));
-
-    cv::split(current_image, test);
-    dest = net_->blob_by_name(INPUT_BLOB_CURRENT_)->mutable_cpu_data();
-    memcpy(dest, test[0].ptr<float>(), target_height_*target_width_*sizeof(float));
-    dest += target_height_*target_width_;
-    memcpy(dest, test[1].ptr<float>(), target_height_*target_width_*sizeof(float));
-    dest += target_height_*target_width_;
-    memcpy(dest, test[2].ptr<float>(), target_height_*target_width_*sizeof(float));
-
+    setImagesToInputLayer(current_image);
     net_->Forward();
-
     publishOpticalFlow(image_msg->header);
   }
   
@@ -185,6 +167,24 @@ void PWCNetNodelet::publishOpticalFlow(const std_msgs::Header& current_image_hea
   }
 
   flow_publisher_.publish(flow_msg);
+}
+
+void PWCNetNodelet::setImagesToInputLayer(const cv::Mat& current_image) {
+  std::vector<cv::Mat> channels;
+  size_t channel_size = current_image.cols * current_image.rows;
+
+  // Set previous image
+  cv::split(previous_image_, channels); // Split to BGR channels
+  d_type_ *input_layer_blob = net_->blob_by_name(INPUT_BLOB_PREVIOUS_)->mutable_cpu_data();
+  // Store each channels to blob
+  for (int i = 0; i < 3; i++)
+    memcpy(input_layer_blob + (channel_size * i), channels[i].ptr<d_type_>(), channel_size * sizeof(float));
+
+  // Set current image
+  cv::split(current_image, channels);
+  input_layer_blob = net_->blob_by_name(INPUT_BLOB_CURRENT_)->mutable_cpu_data();
+  for (int i = 0; i < 3; i++)
+    memcpy(input_layer_blob + (channel_size * i), channels[i].ptr<d_type_>(), channel_size * sizeof(float));
 }
 
 }
