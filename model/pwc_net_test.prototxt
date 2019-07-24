@@ -4,7 +4,7 @@ layer {
   top: "img0"
   top: "dummy1"
   input_param {
-    shape: { dim: 1 dim: 3 dim: $TARGET_WIDTH dim: $TARGET_HEIGHT }
+    shape: { dim: 1 dim: 3 dim: $TARGET_HEIGHT dim: $TARGET_WIDTH }
   }
 }
 layer {
@@ -13,7 +13,7 @@ layer {
   top: "img1"
   top: "dummy2"
   input_param {
-    shape: { dim: 1 dim: 3 dim: $TARGET_WIDTH dim: $TARGET_HEIGHT }
+    shape: { dim: 1 dim: 3 dim: $TARGET_HEIGHT dim: $TARGET_WIDTH }
   }
 }
 
