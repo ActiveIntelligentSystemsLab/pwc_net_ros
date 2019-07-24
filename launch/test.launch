@@ -1,0 +1,21 @@
+<launch>
+  <node name="bag_player" pkg="rosbag" type="play" args="--loop $(find pwc_net)/bag/test_input.bag"/>
+
+  <node name="pwc_net" pkg="pwc_net" type="pwc_net_node" required="true">
+    <remap from="image" to="stereo_robot/mobile_base/camera/left/image_raw"/>
+    <param name="image_transport" value="compressed"/>
+  </node>
+
+  <node name="dense_flow_view" pkg="dense_flow_view" type="dense_flow_view_node">
+    <remap from="flow" to="pwc_net/flow"/>
+    <param name="max_magnitude" value="10"/>
+  </node>
+
+  <node name="input_viewer" pkg="image_view" type="image_view">
+    <remap from="image" to="stereo_robot/mobile_base/camera/left/image_raw"/>
+    <param name="image_transport" value="compressed"/>
+  </node>
+  <node name="output_viewer" pkg="image_view" type="image_view">
+    <remap from="image" to="dense_flow_view/flow_view"/>
+  </node>
+</launch>
