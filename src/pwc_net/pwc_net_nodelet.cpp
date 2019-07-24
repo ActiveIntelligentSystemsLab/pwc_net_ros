@@ -117,12 +117,12 @@ void PWCNetNodelet::initializeNetwork() {
 
       replace_start = line.find(replaced_text);
       if (replace_start != std::string::npos)
-      line.replace(replace_start, replaced_text.length(), new_text);
+        line.replace(replace_start, replaced_text.length(), new_text);
     }
 
-      line += "\n";
-      temporary_ofstream.write(line.c_str(), static_cast<long>(line.length()));
-    }
+    line += "\n";
+    temporary_ofstream.write(line.c_str(), static_cast<long>(line.length()));
+  }
   template_ifstream.close();
   temporary_ofstream.close();
 
