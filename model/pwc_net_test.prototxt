@@ -1,25 +1,3 @@
-/*
-layer {
-  name: "Image1"
-  type: "ImageData"
-  top: "img0"
-  top: "dummy1" 
-  image_data_param {
-    source: "tmp/img1.txt"
-    batch_size: 1
-  }
-}
-layer {
-  name: "Image2"
-  type: "ImageData"
-  top: "img1"
-  top: "dummy2" 
-  image_data_param {
-    source: "tmp/img2.txt"
-    batch_size: 1
-  }
-}
-*/
 layer {
   name: "Image1"
   type: "Input"
@@ -2945,16 +2923,6 @@ layer {
     coeff: 20.0
   }
 }
-# layer {
-#   name: "Eltwise4"
-#   type: "Eltwise"
-#   bottom: "predict_flow2"
-#   top: "blob44"
-#   eltwise_param {
-#     operation: SUM
-#     coeff: 20.0
-#   }
-# }
 layer {
   name: "Resample4"
   type: "Resample"
@@ -2987,16 +2955,3 @@ layer {
     }
   }
 }
-/*
-layer {
-  name: "FLOWriter"
-  type: "FLOWriter"
-  bottom: "predict_flow_final"
-  writer_param {
-    folder: "./tmp"
-    prefix: "pwc-net-pred-"
-    suffix: ""
-    scale: 1.0
-  }
-}
-*/
