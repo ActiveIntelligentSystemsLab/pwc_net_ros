@@ -7,7 +7,7 @@
   </node>
 
   <node name="dense_flow_view" pkg="dense_flow_view" type="dense_flow_view_node">
-    <remap from="flow" to="pwc_net/flow"/>
+    <remap from="flow" to="pwc_net/optical_flow"/>
     <param name="max_magnitude" value="10"/>
   </node>
 
