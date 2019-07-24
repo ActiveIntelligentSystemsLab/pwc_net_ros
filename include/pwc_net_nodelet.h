@@ -93,6 +93,14 @@ private:
   void convertImagesToNetworkInput(const cv::Mat& current_image);
 
   /**
+   * @brief Generate temporary model file from template
+   * Template model file is contain some variable so replace them to real number
+   * 
+   * @param package_path 
+   */
+  std::string generateTemporaryModelFile(const std::string &package_path);
+
+  /**
    * @brief Called when new image is recieved
    * 
    * @param image_msg Recieved ROS message

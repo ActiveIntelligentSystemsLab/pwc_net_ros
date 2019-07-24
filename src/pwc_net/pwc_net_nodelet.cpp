@@ -30,71 +30,7 @@ void PWCNetNodelet::onInit() {
   flow_publisher_ = private_node_handle.advertise<optical_flow_msgs::DenseOpticalFlow>("optical_flow", 1);
 }
 
-void PWCNetNodelet::imageCallback(const sensor_msgs::ImageConstPtr& image_msg) {
-  cv::Mat current_image;
-  try {
-    current_image = cv_bridge::toCvCopy(image_msg, "bgr8")->image;
-  }
-  catch(const cv_bridge::Exception& exception) {
-    NODELET_ERROR_STREAM(exception.what());
-    return;
-  }
-
-  if (!net_) {
-    NODELET_INFO("First image is received and network initialization begins using it's size");
-    target_width_ = current_image.cols;
-    target_height_ = current_image.rows;
-
-    adapted_width_ = static_cast<int>(std::ceil(target_width_ / RESOLUTION_DIVISOR_ * scale_ratio_) * RESOLUTION_DIVISOR_);
-    adapted_height_ = static_cast<int>(std::ceil(target_height_ / RESOLUTION_DIVISOR_ * scale_ratio_) * RESOLUTION_DIVISOR_);
-
-    initializeNetwork();
-  }
-
-  if (current_image.cols != target_width_ || current_image.rows != target_height_) {
-    NODELET_ERROR_STREAM("Size of current image is not same to first input image which is used to initialize network.\n" << 
-      "first: " << target_width_ << "x" << target_height_ << "\n" <<
-      "current: " << current_image.cols << "x" << current_image.rows);
-    return;
-  }
-  current_image.convertTo(current_image, CV_32FC3);
-
-  if (!previous_image_.empty()) {
-    std::vector<cv::Mat> test;
-    cv::split(previous_image_, test);
-
-    float *dest = net_->blob_by_name(INPUT_BLOB_PREVIOUS_)->mutable_cpu_data();
-    memcpy(dest, test[0].ptr<float>(), target_height_*target_width_*sizeof(float));
-    dest += target_height_*target_width_;
-    memcpy(dest, test[1].ptr<float>(), target_height_*target_width_*sizeof(float));
-    dest += target_height_*target_width_;
-    memcpy(dest, test[2].ptr<float>(), target_height_*target_width_*sizeof(float));
-
-    cv::split(current_image, test);
-    dest = net_->blob_by_name(INPUT_BLOB_CURRENT_)->mutable_cpu_data();
-    memcpy(dest, test[0].ptr<float>(), target_height_*target_width_*sizeof(float));
-    dest += target_height_*target_width_;
-    memcpy(dest, test[1].ptr<float>(), target_height_*target_width_*sizeof(float));
-    dest += target_height_*target_width_;
-    memcpy(dest, test[2].ptr<float>(), target_height_*target_width_*sizeof(float));
-
-    net_->Forward();
-
-    publishOpticalFlow(image_msg->header);
-  }
-  
-  current_image.copyTo(previous_image_);
-  previous_stamp_ = image_msg->header.stamp;
-}
-
-void PWCNetNodelet::initializeNetwork() {
-  std::string package_path = ros::package::getPath(PACKAGE_NAME_);
-  if (package_path.empty()) {
-    NODELET_FATAL_STREAM("Package not found: " << PACKAGE_NAME_);
-    ros::shutdown();
-    std::exit(EXIT_FAILURE);
-  }
-
+std::string PWCNetNodelet::generateTemporaryModelFile(const std::string &package_path) {
   std::string model_file_template = package_path + "/model/pwc_net_test.prototxt";
   NODELET_INFO_STREAM("Loading template of model file: " << model_file_template);
 
@@ -140,8 +76,79 @@ void PWCNetNodelet::initializeNetwork() {
   template_ifstream.close();
   temporary_ofstream.close();
 
-  NODELET_INFO("Loading temporary model file");
+  return temporary_model_file;
+}
+
+void PWCNetNodelet::imageCallback(const sensor_msgs::ImageConstPtr& image_msg) {
+  cv::Mat current_image;
+  try {
+    current_image = cv_bridge::toCvCopy(image_msg, "bgr8")->image;
+  }
+  catch(const cv_bridge::Exception& exception) {
+    NODELET_ERROR_STREAM(exception.what());
+    return;
+  }
+
+  if (!net_) {
+    NODELET_INFO("First image is received and network initialization begins using it's size");
+    target_width_ = current_image.cols;
+    target_height_ = current_image.rows;
+
+    adapted_width_ = static_cast<int>(std::ceil(target_width_ / RESOLUTION_DIVISOR_ * scale_ratio_) * RESOLUTION_DIVISOR_);
+    adapted_height_ = static_cast<int>(std::ceil(target_height_ / RESOLUTION_DIVISOR_ * scale_ratio_) * RESOLUTION_DIVISOR_);
+
+    initializeNetwork();
+  }
+
+  if (current_image.cols != target_width_ || current_image.rows != target_height_) {
+    NODELET_ERROR_STREAM("Size of current image is not same to first input image which is used to initialize network.\n" << 
+      "first: " << target_width_ << "x" << target_height_ << "\n" <<
+      "current: " << current_image.cols << "x" << current_image.rows);
+    return;
+  }
+
+  // Convert image to float for input layer
+  current_image.convertTo(current_image, CV_32FC3);
+
+  if (!previous_image_.empty()) {
+    std::vector<cv::Mat> test;
+    cv::split(previous_image_, test);
+
+    float *dest = net_->blob_by_name(INPUT_BLOB_PREVIOUS_)->mutable_cpu_data();
+    memcpy(dest, test[0].ptr<float>(), target_height_*target_width_*sizeof(float));
+    dest += target_height_*target_width_;
+    memcpy(dest, test[1].ptr<float>(), target_height_*target_width_*sizeof(float));
+    dest += target_height_*target_width_;
+    memcpy(dest, test[2].ptr<float>(), target_height_*target_width_*sizeof(float));
+
+    cv::split(current_image, test);
+    dest = net_->blob_by_name(INPUT_BLOB_CURRENT_)->mutable_cpu_data();
+    memcpy(dest, test[0].ptr<float>(), target_height_*target_width_*sizeof(float));
+    dest += target_height_*target_width_;
+    memcpy(dest, test[1].ptr<float>(), target_height_*target_width_*sizeof(float));
+    dest += target_height_*target_width_;
+    memcpy(dest, test[2].ptr<float>(), target_height_*target_width_*sizeof(float));
+
+    net_->Forward();
+
+    publishOpticalFlow(image_msg->header);
+  }
   
+  current_image.copyTo(previous_image_);
+  previous_stamp_ = image_msg->header.stamp;
+}
+
+void PWCNetNodelet::initializeNetwork() {
+  std::string package_path = ros::package::getPath(PACKAGE_NAME_);
+  if (package_path.empty()) {
+    NODELET_FATAL_STREAM("Package not found: " << PACKAGE_NAME_);
+    ros::shutdown();
+    std::exit(EXIT_FAILURE);
+  }
+
+  std::string temporary_model_file = generateTemporaryModelFile(package_path);
+
+  NODELET_INFO("Loading temporary model file");
   net_.reset(new caffe::Net<d_type_>(temporary_model_file, caffe::TEST));
 
   std::string trained_file = package_path + "/model/pwc_net.caffemodel";
