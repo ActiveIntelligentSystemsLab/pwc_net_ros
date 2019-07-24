@@ -24,13 +24,17 @@ private:
    */
   const std::string PACKAGE_NAME_ = "pwc_net";
   /**
-   * @brief Name of MemoryDataLayer for previous image
+   * @brief Blob of input layer for previous image
    */
-  const std::string INPUT_LAYER_PREVIOUS_ = "Image1";
+  const std::string INPUT_BLOB_PREVIOUS_ = "img0";
   /**
-   * @brief Name of MemoryDataLayer for previous image
+   * @brief Blob of input layer for current image
    */
-  const std::string INPUT_LAYER_CURRENT_ = "Image2";
+  const std::string INPUT_BLOB_CURRENT_ = "img1";
+  /**
+   * @brief Output blob
+   */
+  const std::string OUTPUT_BLOB_ = "img1";
   /**
    * @brief Used to resize input images. Network require that input image width and height are multiples of this number.
    */

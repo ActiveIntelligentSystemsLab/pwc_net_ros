@@ -63,7 +63,7 @@ void PWCNetNodelet::imageCallback(const sensor_msgs::ImageConstPtr& image_msg) {
     std::vector<cv::Mat> test;
     cv::split(previous_image_, test);
 
-    float *dest = net_->blob_by_name("img0")->mutable_cpu_data();
+    float *dest = net_->blob_by_name(INPUT_BLOB_PREVIOUS_)->mutable_cpu_data();
     memcpy(dest, test[0].ptr<float>(), target_height_*target_width_*sizeof(float));
     dest += target_height_*target_width_;
     memcpy(dest, test[1].ptr<float>(), target_height_*target_width_*sizeof(float));
@@ -71,18 +71,16 @@ void PWCNetNodelet::imageCallback(const sensor_msgs::ImageConstPtr& image_msg) {
     memcpy(dest, test[2].ptr<float>(), target_height_*target_width_*sizeof(float));
 
     cv::split(current_image, test);
-    dest = net_->blob_by_name("img1")->mutable_cpu_data();
+    dest = net_->blob_by_name(INPUT_BLOB_CURRENT_)->mutable_cpu_data();
     memcpy(dest, test[0].ptr<float>(), target_height_*target_width_*sizeof(float));
     dest += target_height_*target_width_;
     memcpy(dest, test[1].ptr<float>(), target_height_*target_width_*sizeof(float));
     dest += target_height_*target_width_;
     memcpy(dest, test[2].ptr<float>(), target_height_*target_width_*sizeof(float));
 
-    const boost::shared_ptr<caffe::Blob<d_type_>> blob = net_->blob_by_name("img0");
-
     net_->Forward();
 
-    const boost::shared_ptr<caffe::Blob<d_type_>> output_blob = net_->blob_by_name("predict_flow_final");
+    const boost::shared_ptr<caffe::Blob<d_type_>> output_blob = net_->blob_by_name(OUTPUT_BLOB_);
 
     optical_flow_msgs::DenseOpticalFlow flow_msg;
     flow_msg.header.frame_id = image_msg->header.frame_id;
