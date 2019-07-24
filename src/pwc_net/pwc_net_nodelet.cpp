@@ -57,20 +57,60 @@ void PWCNetNodelet::imageCallback(const sensor_msgs::ImageConstPtr& image_msg) {
       "current: " << current_image.cols << "x" << current_image.rows);
     return;
   }
+  current_image.convertTo(current_image, CV_32FC3);
 
-  if (previous_image_.empty()) {
-    current_image.copyTo(previous_image_);
-    return;
+  if (!previous_image_.empty()) {
+    std::vector<cv::Mat> test;
+    cv::split(previous_image_, test);
+
+    float *dest = net_->blob_by_name("img0")->mutable_cpu_data();
+    memcpy(dest, test[0].ptr<float>(), target_height_*target_width_*sizeof(float));
+    dest += target_height_*target_width_;
+    memcpy(dest, test[1].ptr<float>(), target_height_*target_width_*sizeof(float));
+    dest += target_height_*target_width_;
+    memcpy(dest, test[2].ptr<float>(), target_height_*target_width_*sizeof(float));
+
+    cv::split(current_image, test);
+    dest = net_->blob_by_name("img1")->mutable_cpu_data();
+    memcpy(dest, test[0].ptr<float>(), target_height_*target_width_*sizeof(float));
+    dest += target_height_*target_width_;
+    memcpy(dest, test[1].ptr<float>(), target_height_*target_width_*sizeof(float));
+    dest += target_height_*target_width_;
+    memcpy(dest, test[2].ptr<float>(), target_height_*target_width_*sizeof(float));
+
+    const boost::shared_ptr<caffe::Blob<d_type_>> blob = net_->blob_by_name("img0");
+    NODELET_INFO_STREAM("test" << blob->shape(0) << blob->shape(1) << blob->shape(2) << blob->shape(3));
+
+    net_->Forward();
+
+    const boost::shared_ptr<caffe::Blob<d_type_>> output_blob = net_->blob_by_name("predict_flow_final");
+
+    optical_flow_msgs::DenseOpticalFlow flow_msg;
+    flow_msg.header.frame_id = image_msg->header.frame_id;
+    flow_msg.header.stamp = image_msg->header.stamp;
+    flow_msg.previous_stamp = previous_stamp_;
+
+    flow_msg.width = output_blob->shape(3);
+    flow_msg.height = output_blob->shape(2);
+
+    size_t flow_num = flow_msg.width * flow_msg.height;
+    flow_msg.invalid_map.resize(flow_num, false);
+    flow_msg.flow_field.resize(flow_num);
+
+    const float *flow_x = output_blob->cpu_data();
+    const float *flow_y = flow_x + flow_num;
+
+    for (int i = 0; i < flow_num; i++) {
+      optical_flow_msgs::PixelDisplacement& flow_at_point = flow_msg.flow_field[i];
+      flow_at_point.x = flow_x[i];
+      flow_at_point.y = flow_y[i];
+    }
+
+    flow_publisher_.publish(flow_msg);
   }
   
-  cv::split(previous_image_, input_channels_previous_);  
-  cv::split(current_image, input_channels_current_); 
-
-  caffe::Blob<d_type_>* output_blob = net_->output_blobs()[0];
-  NODELET_INFO_STREAM("shape(0): " << output_blob->shape(0));
-  NODELET_INFO_STREAM("shape(1): " << output_blob->shape(1));
-  NODELET_INFO_STREAM("shape(2): " << output_blob->shape(2));
-  NODELET_INFO_STREAM("shape(3): " << output_blob->shape(3));
+  current_image.copyTo(previous_image_);
+  previous_stamp_ = image_msg->header.stamp;
 }
 
 void PWCNetNodelet::initializeNetwork() {
@@ -135,44 +175,10 @@ void PWCNetNodelet::initializeNetwork() {
   net_->CopyTrainedLayersFrom(trained_file);
 
   NODELET_INFO("Allocating memory and set it to input layers");
-  std::vector<int> input_blob_shape;
-  input_blob_shape.push_back(1);
-  input_blob_shape.push_back(3);
-  input_blob_shape.push_back(target_width_);
-  input_blob_shape.push_back(target_height_);
-  input_blob_previous_.reset(new caffe::Blob<d_type_>(input_blob_shape));
-  input_blob_current_.reset(new caffe::Blob<d_type_>(input_blob_shape));
 
-  setChannelsToBlob(input_blob_previous_.get(), &input_channels_previous_);
-  setChannelsToBlob(input_blob_current_.get(), &input_channels_current_);
-
-  const boost::shared_ptr<caffe::Layer<d_type_>> input_layer_previous = net_->layer_by_name(INPUT_LAYER_PREVIOUS_);
-  setBlobToInputLayer(input_blob_previous_.get(), input_layer_previous.get());
-
-  const boost::shared_ptr<caffe::Layer<d_type_>> input_layer_current = net_->layer_by_name(INPUT_LAYER_CURRENT_);
-  setBlobToInputLayer(input_blob_current_.get(), input_layer_current.get());
+  caffe::Caffe::set_mode(caffe::Caffe::GPU);
 
   NODELET_INFO_STREAM("Network initialization is finished");
-}
-
-void PWCNetNodelet::setChannelsToBlob(caffe::Blob<d_type_>* blob, std::vector<cv::Mat>* channels) {
-  channels->clear();
-
-  float * blob_data = blob->mutable_cpu_data();
-  for (int i = 0; i < 3; ++i) {
-    cv::Mat single_channel(target_height_, target_width_, CV_32FC1, blob_data);
-    channels->push_back(single_channel);
-    blob_data += target_width_ * target_height_;
-  }
-}
-
-void PWCNetNodelet::setBlobToInputLayer(caffe::Blob<d_type_>* blob, caffe::Layer<d_type_>* input_layer) {
-  std::vector<caffe::Blob<d_type_>*> blobs_top;
-  blobs_top.push_back(blob);
-
-  std::vector<caffe::Blob<d_type_>*> blobs_bottom; // bottom is never used in LayerSetUp
-
-  input_layer->LayerSetUp(blobs_bottom, blobs_top);
 }
 
 }

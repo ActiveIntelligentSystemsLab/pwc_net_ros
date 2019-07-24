@@ -69,24 +69,14 @@ private:
   image_transport::Subscriber image_subscriber_;
   ros::Publisher flow_publisher_;
 
+  /**
+   * @brief Previous frame image used as input of optical flow calculation
+   */
   cv::Mat previous_image_;
-
   /**
-   * @brief Blob of InputLayer for previous image
+   * @brief Timestamp of previous frame image
    */
-  std::shared_ptr<caffe::Blob<d_type_>> input_blob_previous_;
-  /**
-   * @brief Blob of InputLayer for current image
-   */
-  std::shared_ptr<caffe::Blob<d_type_>> input_blob_current_;
-  /**
-   * @brief Channels of previous input image which is associated to blob
-   */
-  std::vector<cv::Mat> input_channels_previous_;
-  /**
-   * @brief Channels of current input image which is associated to blob
-   */
-  std::vector<cv::Mat> input_channels_current_;
+  ros::Time previous_stamp_;
 
   void onInit();
 
@@ -108,22 +98,6 @@ private:
    * @brief Initialize network model
    */
   void initializeNetwork();
-
-  /**
-   * @brief Associate channels to blob's memory area
-   * 
-   * @param blob     Blob
-   * @param channels It's cotent will be cleared
-   */
-  void setChannelsToBlob(caffe::Blob<d_type_>* blob, std::vector<cv::Mat>* channels);
-
-  /**
-   * @brief Set the Blob To InputLayer
-   * 
-   * @param blob        A blob set to InputLayer as top
-   * @param input_layer Target InputLayer
-   */
-  void setBlobToInputLayer(caffe::Blob<d_type_>* blob, caffe::Layer<d_type_>* input_layer);
 };
 
 } // end of pwc_net namespace
