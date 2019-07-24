@@ -174,8 +174,6 @@ void PWCNetNodelet::initializeNetwork() {
   NODELET_INFO_STREAM("Loading trained file: " << trained_file);
   net_->CopyTrainedLayersFrom(trained_file);
 
-  NODELET_INFO("Allocating memory and set it to input layers");
-
   caffe::Caffe::set_mode(caffe::Caffe::GPU);
 
   NODELET_INFO_STREAM("Network initialization is finished");
