@@ -6,6 +6,7 @@ PLUGINLIB_EXPORT_CLASS(pwc_net::PWCNetNodelet, nodelet::Nodelet)
 
 #include <cv_bridge/cv_bridge.h>
 #include <ros/package.h>
+#include <ros/time.h>
 
 #include <cmath>
 #include <cstdlib>
@@ -80,6 +81,8 @@ std::string PWCNetNodelet::generateTemporaryModelFile(const std::string &package
 }
 
 void PWCNetNodelet::imageCallback(const sensor_msgs::ImageConstPtr& image_msg) {
+  ros::WallTime process_start = ros::WallTime::now();
+
   cv::Mat current_image;
   try {
     current_image = cv_bridge::toCvCopy(image_msg, "bgr8")->image;
@@ -106,8 +109,15 @@ void PWCNetNodelet::imageCallback(const sensor_msgs::ImageConstPtr& image_msg) {
 
   if (!previous_image_.empty()) {
     setImagesToInputLayer(current_image);
+
+    ros::WallTime inference_start = ros::WallTime::now();
     net_->Forward();
+    ros::WallDuration inference_time = ros::WallTime::now() - inference_start;
+
     publishOpticalFlow(image_msg->header);
+    ros::WallDuration process_time = ros::WallTime::now() - process_start;
+
+    NODELET_INFO_STREAM("Total process time: " << process_time.toSec() << " [s] (inference time: " << inference_time.toSec() << " [s])");
   }
   
   current_image.copyTo(previous_image_);
