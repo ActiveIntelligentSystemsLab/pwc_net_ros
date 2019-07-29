@@ -5,6 +5,7 @@
 #include <image_transport/image_transport.h>
 #include <nodelet/nodelet.h>
 #include <optical_flow_msgs/DenseOpticalFlow.h>
+#include <optical_flow_srvs/CalculateDenseOpticalFlow.h>
 #include <sensor_msgs/Image.h>
 #include <std_msgs/Header.h>
 
@@ -25,13 +26,13 @@ private:
    */
   const std::string PACKAGE_NAME_ = "pwc_net";
   /**
-   * @brief Blob of input layer for previous image
+   * @brief Blob of input layer for older image
    */
-  const std::string INPUT_BLOB_PREVIOUS_ = "img0";
+  const std::string INPUT_BLOB_OLDER_ = "img0";
   /**
-   * @brief Blob of input layer for current image
+   * @brief Blob of input layer for newer image
    */
-  const std::string INPUT_BLOB_CURRENT_ = "img1";
+  const std::string INPUT_BLOB_NEWER_ = "img1";
   /**
    * @brief Output blob
    */
@@ -75,6 +76,11 @@ private:
   ros::Publisher flow_publisher_;
 
   /**
+   * @brief Service server for CalculateDenseOpticalFlow service
+   */
+  ros::ServiceServer flow_service_server_;
+
+  /**
    * @brief Previous frame image used as input of optical flow calculation
    */
   cv::Mat previous_image_;
@@ -107,6 +113,16 @@ private:
    * @param image_height Height of input images
    */
   void initializeNetwork(int image_width, int image_height);
+
+  /**
+   * @brief Convert output layer blob to optical_flow_msgs/DenseOpticalFlow
+   * 
+   * @param frame_id Frame id of input images
+   * @param newer_stamp Timestamp of newer image
+   * @param older_stamp Timestamp of older image
+   * @param flow_msg Pointer to ROS msg
+   */
+  void outputLayerToFlowMsg(const std::string& frame_id, const ros::Time& newer_stamp, const ros::Time& older_stamp, optical_flow_msgs::DenseOpticalFlow* flow_msg);
   
   /**
    * @brief Publish optical flow msg from output of network
@@ -115,12 +131,15 @@ private:
    */
   void publishOpticalFlow(const std_msgs::Header& current_image_header);
 
+  bool serviceCallback(optical_flow_srvs::CalculateDenseOpticalFlow::Request& request, optical_flow_srvs::CalculateDenseOpticalFlow::Response& response);
+
   /**
-   * @brief Set current/previous images to input layer of network
+   * @brief Set input images To input Layer of network
    * 
-   * @param current_image Current image 
+   * @param older_image 
+   * @param newer_image 
    */
-  void setImagesToInputLayer(const cv::Mat& current_image);
+  void setImagesToInputLayer(const cv::Mat& older_image, const cv::Mat& newer_image);
 };
 
 } // end of pwc_net namespace

@@ -29,6 +29,8 @@ void PWCNetNodelet::onInit() {
   image_subscriber_ = image_transport_->subscribe(image_topic, 1, &PWCNetNodelet::imageCallback, this);
   
   flow_publisher_ = private_node_handle.advertise<optical_flow_msgs::DenseOpticalFlow>("optical_flow", 1);
+
+  flow_service_server_ = private_node_handle.advertiseService("calculate_dense_optical_flow", &PWCNetNodelet::serviceCallback, this);
 }
 
 std::string PWCNetNodelet::generateTemporaryModelFile(const std::string &package_path) {
@@ -108,7 +110,7 @@ void PWCNetNodelet::imageCallback(const sensor_msgs::ImageConstPtr& image_msg) {
   current_image.convertTo(current_image, CV_32FC3);
 
   if (!previous_image_.empty()) {
-    setImagesToInputLayer(current_image);
+    setImagesToInputLayer(previous_image_, current_image);
 
     ros::WallTime inference_start = ros::WallTime::now();
     net_->Forward();
@@ -151,47 +153,102 @@ void PWCNetNodelet::initializeNetwork(int image_width, int image_height) {
   NODELET_INFO_STREAM("Network initialization is finished");
 }
 
-void PWCNetNodelet::publishOpticalFlow(const std_msgs::Header& current_image_header) {
+void PWCNetNodelet::outputLayerToFlowMsg(const std::string& frame_id, const ros::Time& newer_stamp, const ros::Time& older_stamp, optical_flow_msgs::DenseOpticalFlow* flow_msg)
+{
   const boost::shared_ptr<caffe::Blob<d_type_>> output_blob = net_->blob_by_name(OUTPUT_BLOB_);
 
-  optical_flow_msgs::DenseOpticalFlow flow_msg;
-  flow_msg.header.frame_id = current_image_header.frame_id;
-  flow_msg.header.stamp = current_image_header.stamp;
-  flow_msg.previous_stamp = previous_stamp_;
+  flow_msg->header.frame_id = frame_id;
+  flow_msg->header.stamp = newer_stamp;
+  flow_msg->previous_stamp = older_stamp;
 
-  flow_msg.width = output_blob->shape(3);
-  flow_msg.height = output_blob->shape(2);
+  flow_msg->width = output_blob->shape(3);
+  flow_msg->height = output_blob->shape(2);
 
-  size_t flow_num = flow_msg.width * flow_msg.height;
-  flow_msg.invalid_map.resize(flow_num, false);
-  flow_msg.flow_field.resize(flow_num);
+  size_t flow_num = flow_msg->width * flow_msg->height;
+  flow_msg->invalid_map.resize(flow_num, false);
+  flow_msg->flow_field.resize(flow_num);
 
   const float *flow_x = output_blob->cpu_data();
   const float *flow_y = flow_x + flow_num;
 
   for (int i = 0; i < flow_num; i++) {
-    optical_flow_msgs::PixelDisplacement& flow_at_point = flow_msg.flow_field[i];
+    optical_flow_msgs::PixelDisplacement& flow_at_point = flow_msg->flow_field[i];
     flow_at_point.x = flow_x[i];
     flow_at_point.y = flow_y[i];
   }
+}
+
+void PWCNetNodelet::publishOpticalFlow(const std_msgs::Header& current_image_header) {
+  const boost::shared_ptr<caffe::Blob<d_type_>> output_blob = net_->blob_by_name(OUTPUT_BLOB_);
+
+  optical_flow_msgs::DenseOpticalFlow flow_msg;
+  outputLayerToFlowMsg(current_image_header.frame_id, current_image_header.stamp, previous_stamp_, &flow_msg);
 
   flow_publisher_.publish(flow_msg);
 }
 
-void PWCNetNodelet::setImagesToInputLayer(const cv::Mat& current_image) {
-  std::vector<cv::Mat> channels;
-  size_t channel_size = current_image.cols * current_image.rows;
+bool PWCNetNodelet::serviceCallback(optical_flow_srvs::CalculateDenseOpticalFlow::Request& request, optical_flow_srvs::CalculateDenseOpticalFlow::Response& response)
+{
+  ros::WallTime process_start = ros::WallTime::now();
 
-  // Set previous image
-  cv::split(previous_image_, channels); // Split to BGR channels
-  d_type_ *input_layer_blob = net_->blob_by_name(INPUT_BLOB_PREVIOUS_)->mutable_cpu_data();
+  cv::Mat older_image, newer_image;
+  try {
+    older_image = cv_bridge::toCvCopy(request.older_image, "bgr8")->image;
+    newer_image = cv_bridge::toCvCopy(request.newer_image, "bgr8")->image;
+  }
+  catch(const cv_bridge::Exception& exception) {
+    NODELET_ERROR_STREAM(exception.what());
+    return false;
+  }
+
+  if (older_image.cols != newer_image.cols || older_image.rows != newer_image.rows)
+  {
+    NODELET_ERROR_STREAM("Two images in request is not same size.\n"
+      << "older_image: " << older_image.cols << "x" << older_image.rows << "\n"
+      << "newer_image: " << newer_image.cols << "x" << newer_image.rows);
+    return false;
+  }
+
+  if (!net_) {
+    NODELET_INFO("Network initialization begins by request images size");
+    initializeNetwork(newer_image.cols, newer_image.rows);
+  }
+
+  // Convert image to float for input layer
+  older_image.convertTo(older_image, CV_32FC3);
+  newer_image.convertTo(newer_image, CV_32FC3);
+
+  setImagesToInputLayer(older_image, newer_image);
+
+  ros::WallTime inference_start = ros::WallTime::now();
+  net_->Forward();
+  ros::WallDuration inference_time = ros::WallTime::now() - inference_start;
+
+  std::string& frame_id = request.newer_image.header.frame_id;
+  ros::Time& newer_stamp = request.newer_image.header.stamp;
+  ros::Time& older_stamp = request.older_image.header.stamp;
+  outputLayerToFlowMsg(frame_id, newer_stamp, older_stamp, &response.optical_flow);
+
+  ros::WallDuration process_time = ros::WallTime::now() - process_start;
+  NODELET_INFO_STREAM("Service process time: " << process_time.toSec() << " [s] (inference time: " << inference_time.toSec() << " [s])");
+
+  return true;
+}
+
+void PWCNetNodelet::setImagesToInputLayer(const cv::Mat& older_image, const cv::Mat& newer_image) {
+  std::vector<cv::Mat> channels;
+  size_t channel_size = older_image.cols * older_image.rows;
+
+  // Set older image
+  cv::split(older_image, channels); // Split to BGR channels
+  d_type_ *input_layer_blob = net_->blob_by_name(INPUT_BLOB_OLDER_)->mutable_cpu_data();
   // Store each channels to blob
   for (int i = 0; i < 3; i++)
     memcpy(input_layer_blob + (channel_size * i), channels[i].ptr<d_type_>(), channel_size * sizeof(float));
 
   // Set current image
-  cv::split(current_image, channels);
-  input_layer_blob = net_->blob_by_name(INPUT_BLOB_CURRENT_)->mutable_cpu_data();
+  cv::split(newer_image, channels);
+  input_layer_blob = net_->blob_by_name(INPUT_BLOB_NEWER_)->mutable_cpu_data();
   for (int i = 0; i < 3; i++)
     memcpy(input_layer_blob + (channel_size * i), channels[i].ptr<d_type_>(), channel_size * sizeof(float));
 }

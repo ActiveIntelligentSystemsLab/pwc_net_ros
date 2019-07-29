@@ -6,6 +6,7 @@ find_package(catkin REQUIRED
   image_transport
   nodelet
   optical_flow_msgs
+  optical_flow_srvs
   pluginlib
   roscpp
   sensor_msgs
