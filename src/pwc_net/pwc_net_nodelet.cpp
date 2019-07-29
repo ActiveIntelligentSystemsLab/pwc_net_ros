@@ -22,8 +22,6 @@ void PWCNetNodelet::onInit() {
 
   scale_ratio_ = private_node_handle.param("scale_ratio", 1.0);
 
-  caffe::Caffe::set_mode(caffe::Caffe::GPU);
-
   std::string image_topic = node_handle.resolveName("image");
   image_transport_.reset(new image_transport::ImageTransport(node_handle));
   image_subscriber_ = image_transport_->subscribe(image_topic, 1, &PWCNetNodelet::imageCallback, this);
