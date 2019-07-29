@@ -209,7 +209,7 @@ bool PWCNetNodelet::serviceCallback(optical_flow_srvs::CalculateDenseOpticalFlow
     return false;
   }
 
-  if (!net_) {
+  if (!net_ || newer_image.cols != target_width_ || newer_image.rows != target_height_) {
     NODELET_INFO("Network initialization begins by request images size");
     initializeNetwork(newer_image.cols, newer_image.rows);
   }
