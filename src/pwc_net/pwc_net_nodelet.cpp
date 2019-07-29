@@ -92,10 +92,8 @@ void PWCNetNodelet::imageCallback(const sensor_msgs::ImageConstPtr& image_msg) {
     return;
   }
 
-  if (!net_) {
-    NODELET_INFO("First image is received and network initialization begins using it's size");
+  if (!net_)
     initializeNetwork(current_image.cols, current_image.rows);
-  }
 
   if (current_image.cols != target_width_ || current_image.rows != target_height_) {
     NODELET_ERROR_STREAM("Size of current image is not same to first input image which is used to initialize network.\n" << 
@@ -125,6 +123,9 @@ void PWCNetNodelet::imageCallback(const sensor_msgs::ImageConstPtr& image_msg) {
 }
 
 void PWCNetNodelet::initializeNetwork(int image_width, int image_height) {
+  NODELET_INFO_STREAM("Start network initialization\n"
+    << "input image size: " << image_width << "x" << image_height);
+
   if (image_width <= 0 || image_height <= 0)
   {
     NODELET_FATAL_STREAM("Invalid size is specified to network initialization!\n" 
@@ -215,10 +216,8 @@ bool PWCNetNodelet::serviceCallback(optical_flow_srvs::CalculateDenseOpticalFlow
     return false;
   }
 
-  if (!net_ || newer_image.cols != target_width_ || newer_image.rows != target_height_) {
-    NODELET_INFO("Network initialization begins by request images size");
+  if (!net_ || newer_image.cols != target_width_ || newer_image.rows != target_height_)
     initializeNetwork(newer_image.cols, newer_image.rows);
-  }
 
   // Convert image to float for input layer
   older_image.convertTo(older_image, CV_32FC3);
