@@ -22,6 +22,13 @@ void PWCNetNodelet::onInit() {
 
   scale_ratio_ = private_node_handle.param("scale_ratio", 1.0);
 
+  // Initialize network if image_width and image_height params are available
+  int image_width, image_height;
+  bool width_param = private_node_handle.getParam("image_width", image_width);
+  bool height_param = private_node_handle.getParam("image_height", image_height);
+  if (width_param && height_param)
+    initializeNetwork(image_width, image_height);
+
   std::string image_topic = node_handle.resolveName("image");
   image_transport_.reset(new image_transport::ImageTransport(node_handle));
   image_subscriber_ = image_transport_->subscribe(image_topic, 1, &PWCNetNodelet::imageCallback, this);

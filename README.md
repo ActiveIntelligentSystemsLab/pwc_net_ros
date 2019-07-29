@@ -41,6 +41,12 @@ A node estimates dense optical flow from image topic.
 
   For small images, it better set the scale_ratio to be 2.0 or 3.0 so that the input has height/width around 1000.
 
+* `~image_width` (int, default: Not set)
+* `~image_height` (int, default: Not set)
+
+  If both of width and height are set, initialize network to use them for input layer's dimmension.
+  If not set, the size of first image from topic or service is used for the initialization.
+
 ## pwc_net/pwc_net (Nodelet)
 
 Nodelet version of [pwc_net_node](#pwc_net_node-(Node)).
