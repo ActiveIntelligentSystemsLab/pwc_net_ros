@@ -25,6 +25,12 @@ A node estimates dense optical flow from image topic.
 
   Estimated optical flow.
 
+### Provided services
+
+* `~calculate_dense_optical_flow` ([optical_flow_srvs/CalculateDenseOpticalFlow](https://github.com/ActiveIntelligentSystemsLab/ros_optical_flow/blob/master/optical_flow_srvs/srv/CalculateDenseOpticalFlow.srv))
+
+  Return dense optical flow between input images in request.
+
 ### Parameters
 
 * `~image_transport` (string, default: "raw")
