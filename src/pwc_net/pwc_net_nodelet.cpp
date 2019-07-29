@@ -125,6 +125,14 @@ void PWCNetNodelet::imageCallback(const sensor_msgs::ImageConstPtr& image_msg) {
 }
 
 void PWCNetNodelet::initializeNetwork(int image_width, int image_height) {
+  if (image_width <= 0 || image_height <= 0)
+  {
+    NODELET_FATAL_STREAM("Invalid size is specified to network initialization!\n" 
+      << "Specified value: " << image_width << "x" << image_height);
+      ros::shutdown();
+      std::exit(EXIT_FAILURE);
+  }
+
   target_width_ = image_width;
   target_height_ = image_height;
   adapted_width_ = static_cast<int>(std::ceil(target_width_ / RESOLUTION_DIVISOR_ * scale_ratio_) * RESOLUTION_DIVISOR_);
