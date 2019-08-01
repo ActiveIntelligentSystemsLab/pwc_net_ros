@@ -204,6 +204,7 @@ void PWCNetNodelet::publishOpticalFlow(const std_msgs::Header& current_image_hea
 bool PWCNetNodelet::serviceCallback(optical_flow_srvs::CalculateDenseOpticalFlow::Request& request, optical_flow_srvs::CalculateDenseOpticalFlow::Response& response)
 {
   ros::WallTime process_start = ros::WallTime::now();
+  NODELET_INFO("CalculateDenseOpticalFlow service is called.");
 
   cv::Mat older_image, newer_image;
   try {
