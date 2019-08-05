@@ -162,8 +162,6 @@ void PWCNetNodelet::initializeNetwork(int image_width, int image_height) {
   NODELET_INFO_STREAM("Loading trained file: " << trained_file);
   net_->CopyTrainedLayersFrom(trained_file);
 
-  caffe::Caffe::set_mode(caffe::Caffe::GPU);
-
   NODELET_INFO_STREAM("Network initialization is finished");
 }
 
@@ -264,6 +262,8 @@ void PWCNetNodelet::setImagesToInputLayer(const cv::Mat& older_image, const cv::
   input_layer_blob = net_->blob_by_name(INPUT_BLOB_NEWER_)->mutable_cpu_data();
   for (int i = 0; i < 3; i++)
     memcpy(input_layer_blob + (channel_size * i), channels[i].ptr<d_type_>(), channel_size * sizeof(float));
+
+  caffe::Caffe::set_mode(caffe::Caffe::GPU);
 }
 
 }
