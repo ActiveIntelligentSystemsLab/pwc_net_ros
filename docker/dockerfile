@@ -1,0 +1,44 @@
+FROM nvidia/cuda:10.1-cudnn7-devel-ubuntu18.04
+
+# Setup timezone
+RUN echo 'Etc/UTC' > /etc/timezone && \
+    ln -s /usr/share/zoneinfo/Etc/UTC /etc/localtime && \
+    apt-get update && apt-get install -y tzdata
+
+# Install packages to add ROS repository
+RUN apt-get install -y dirmngr gnupg2
+
+# Add ROS repository
+RUN sh -c 'echo "deb http://packages.ros.org/ros/ubuntu bionic main" > /etc/apt/sources.list.d/ros-latest.list'
+# Keys for ROS repository
+RUN apt-key adv --keyserver 'hkp://keyserver.ubuntu.com:80' --recv-key C1CF6E31E6BADE8868B172B4F42ED6FBAB17C654
+
+# Install ROS bootstrap tools
+RUN apt-get update && apt-get install --no-install-recommends -y \
+    python-rosdep \
+    python-rosinstall \
+    python-vcstools
+
+# Setup environment
+ENV LANG C.UTF-8
+ENV LC_ALL C.UTF-8
+
+# Install ROS-Base packages
+RUN apt-get install -y ros-melodic-ros-base
+
+# Download Caffe for FlowNet2
+RUN cd /root && git clone https://github.com/xmfbit/flownet2
+# Download PWC-Net
+RUN cd /root && git clone https://github.com/NVlabs/PWC-Net.git
+# Patch to Caffe from PWC-Net
+RUN cd /root && cp PWC-Net/Caffe/warping_code/warp_layer.cu PWC-Net/Caffe/warping_code/warp_layer.cpp flownet2/src/caffe/layers/
+RUN cd /root && cp PWC-Net/Caffe/warping_code/warp_layer.hpp flownet2/include/caffe/layers/
+
+
+# Delete apt repository caches
+RUN rm -rf /var/lib/apt/lists/*
+
+# Load ROS environment at each run
+COPY ./ros_entrypoint.sh /
+ENTRYPOINT ["/ros_entrypoint.sh"]
+CMD ["bash"]
