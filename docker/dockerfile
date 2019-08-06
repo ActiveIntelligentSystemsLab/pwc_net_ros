@@ -26,14 +26,22 @@ ENV LC_ALL C.UTF-8
 # Install ROS-Base packages
 RUN apt-get install -y ros-melodic-ros-base
 
+# Make catkin workspace
+RUN mkdir -p /root/catkin_ws/src
+RUN /bin/bash -c "source /opt/ros/melodic/setup.bash && cd /root/catkin_ws && catkin_make"
+
+# Download pwc_net_ros
+RUN cd /root/catkin_ws/src && git clone https://github.com/fujimo-t/pwc_net_ros.git
 # Download Caffe for FlowNet2
 RUN cd /root && git clone https://github.com/xmfbit/flownet2
 # Download PWC-Net
 RUN cd /root && git clone https://github.com/NVlabs/PWC-Net.git
-# Patch to Caffe from PWC-Net
-RUN cd /root && cp PWC-Net/Caffe/warping_code/warp_layer.cu PWC-Net/Caffe/warping_code/warp_layer.cpp flownet2/src/caffe/layers/
-RUN cd /root && cp PWC-Net/Caffe/warping_code/warp_layer.hpp flownet2/include/caffe/layers/
 
+# Patch to Caffe from PWC-Net
+RUN cp /root/PWC-Net/Caffe/warping_code/warp_layer.cu /root/PWC-Net/Caffe/warping_code/warp_layer.cpp /root/flownet2/src/caffe/layers/
+RUN cp /root/PWC-Net/Caffe/warping_code/warp_layer.hpp /root/flownet2/include/caffe/layers/
+# Set make config to Caffe
+RUN cp /root/catkin_ws/src/pwc_net_ros/docker/caffe/Makefile.config /root/flownet2/
 
 # Delete apt repository caches
 RUN rm -rf /var/lib/apt/lists/*
