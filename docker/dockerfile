@@ -24,7 +24,7 @@ ENV LANG C.UTF-8
 ENV LC_ALL C.UTF-8
 
 # Install ROS-Base packages
-RUN apt-get install -y ros-melodic-ros-base
+RUN apt-get update && apt-get install -y ros-melodic-ros-base
 
 # Make catkin workspace
 RUN mkdir -p /root/catkin_ws/src
@@ -42,6 +42,24 @@ RUN cp /root/PWC-Net/Caffe/warping_code/warp_layer.cu /root/PWC-Net/Caffe/warpin
 RUN cp /root/PWC-Net/Caffe/warping_code/warp_layer.hpp /root/flownet2/include/caffe/layers/
 # Set make config to Caffe
 RUN cp /root/catkin_ws/src/pwc_net_ros/docker/caffe/Makefile.config /root/flownet2/
+# Install packages to build caffe
+RUN apt-get update && apt-get install -y \
+    libprotobuf-dev \
+    libleveldb-dev \
+    libsnappy-dev \
+    libopencv-dev \
+    libhdf5-serial-dev \
+    protobuf-compiler \
+    libatlas-base-dev \
+    python-dev \
+    libgflags-dev \
+    libgoogle-glog-dev \
+    liblmdb-dev
+RUN apt-get update && apt-get install -y --no-install-recommends libboost-all-dev
+# Build Caffe
+# It will take long time so using multi thread option of make command is recommended
+# Ex. make all -j8
+RUN cd /root/flownet2 && make all 
 
 # Delete apt repository caches
 RUN rm -rf /var/lib/apt/lists/*
