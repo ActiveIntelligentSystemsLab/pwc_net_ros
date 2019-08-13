@@ -66,8 +66,8 @@ RUN rosdep init
 RUN rosdep update
 
 RUN cd /root/catkin_ws/src && git clone https://github.com/ActiveIntelligentSystemsLab/ros_optical_flow.git
-RUN /bin/bash -c "source /opt/ros/melodic/setup.bash && /root/catkin_ws/devel/setup.bash && cd /root/catkin_ws && rosdep install -r pwc_net"
-RUN /bin/bash -c "source /opt/ros/melodic/setup.bash && /root/catkin_ws/devel/setup.bash && cd /root/catkin_ws && catkin_make"
+RUN /bin/bash -c "source /opt/ros/melodic/setup.bash && source /root/catkin_ws/devel/setup.bash && cd /root/catkin_ws && rosdep install -r -y pwc_net"
+RUN /bin/bash -c "source /opt/ros/melodic/setup.bash && source /root/catkin_ws/devel/setup.bash && cd /root/catkin_ws && catkin_make"
 
 # Delete apt repository caches
 RUN rm -rf /var/lib/apt/lists/*
