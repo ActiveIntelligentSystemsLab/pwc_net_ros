@@ -1,5 +1,5 @@
-cmake_minimum_required(VERSION 2.8.3)
-project(pwc_net)
+cmake_minimum_required(VERSION 3.8 FATAL_ERROR)
+project(pwc_net CUDA CXX)
 
 find_package(catkin REQUIRED
   cv_bridge
@@ -16,16 +16,18 @@ find_package(OpenCV REQUIRED)
 
 catkin_package()
 
+set(CAFFE_PATH /root/flownet2)
+
 include_directories(
   include
   ${catkin_INCLUDE_DIRS}
   ${OpenCV_INCLUDE_DIRS}
-  /home/fujimoto/Desktop/flownet2/include
-  /usr/local/cuda-10.0/targets/x86_64-linux/include
+  ${CAFFE_PATH}/include
+  ${CAFFE_PATH}/build/src
 )
 
 add_library(${PROJECT_NAME}
-  src/${PROJECT_NAME}/pwc_net_nodelet.cpp
+  src/${PROJECT_NAME}/pwc_net_nodelet.cu
 )
 
 add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
@@ -33,7 +35,7 @@ add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EX
 target_link_libraries(${PROJECT_NAME}
   ${catkin_LIBRARIES}
   ${OpenCV_LIBRARIES}
-  /home/fujimoto/Desktop/flownet2/build/lib/libcaffe.so
+  ${CAFFE_PATH}/build/lib/libcaffe.so
 )
 
 add_executable(pwc_net_node src/pwc_net_node.cpp)
