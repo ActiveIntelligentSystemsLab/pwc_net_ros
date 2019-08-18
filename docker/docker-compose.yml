@@ -1,0 +1,12 @@
+version: "2.3"
+services: 
+  pwc_net_ros:
+    build: .
+    container_name: pwc_net_ros
+    command: roslaunch pwc_net test.launch
+    runtime: nvidia
+    environment: 
+      - DISPLAY
+      - QT_X11_NO_MITSHM=1
+    volumes: 
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
