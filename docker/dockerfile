@@ -18,13 +18,22 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
     python-rosdep \
     python-rosinstall \
     python-vcstools
-
-# Setup environment
-ENV LANG C.UTF-8
-ENV LC_ALL C.UTF-8
-
 # Install ROS-Base packages
 RUN apt-get update && apt-get install -y ros-melodic-ros-base
+# Install packages to build caffe
+RUN apt-get update && apt-get install -y \
+    libprotobuf-dev \
+    libleveldb-dev \
+    libsnappy-dev \
+    libopencv-dev \
+    libhdf5-serial-dev \
+    protobuf-compiler \
+    libatlas-base-dev \
+    python-dev \
+    libgflags-dev \
+    libgoogle-glog-dev \
+    liblmdb-dev
+RUN apt-get update && apt-get install -y --no-install-recommends libboost-all-dev
 
 # Make catkin workspace
 RUN mkdir -p /root/catkin_ws/src
@@ -42,23 +51,7 @@ RUN cp /root/PWC-Net/Caffe/warping_code/warp_layer.cu /root/PWC-Net/Caffe/warpin
 RUN cp /root/PWC-Net/Caffe/warping_code/warp_layer.hpp /root/flownet2/include/caffe/layers/
 # Set make config to Caffe
 RUN cp /root/catkin_ws/src/pwc_net_ros/docker/caffe/Makefile.config /root/flownet2/
-# Install packages to build caffe
-RUN apt-get update && apt-get install -y \
-    libprotobuf-dev \
-    libleveldb-dev \
-    libsnappy-dev \
-    libopencv-dev \
-    libhdf5-serial-dev \
-    protobuf-compiler \
-    libatlas-base-dev \
-    python-dev \
-    libgflags-dev \
-    libgoogle-glog-dev \
-    liblmdb-dev
-RUN apt-get update && apt-get install -y --no-install-recommends libboost-all-dev
-# Build Caffe
-# It will take long time so using multi thread option of make command is recommended
-# Ex. make all -j8
+# Build Caffe for PWC-Net
 RUN cd /root/flownet2 && make all 
 
 # Build pwc_net_ros
@@ -68,9 +61,6 @@ RUN rosdep update
 RUN cd /root/catkin_ws/src && git clone https://github.com/ActiveIntelligentSystemsLab/ros_optical_flow.git
 RUN /bin/bash -c "source /opt/ros/melodic/setup.bash && source /root/catkin_ws/devel/setup.bash && cd /root/catkin_ws && rosdep install -r -y pwc_net"
 RUN /bin/bash -c "source /opt/ros/melodic/setup.bash && source /root/catkin_ws/devel/setup.bash && cd /root/catkin_ws && catkin_make"
-
-# Delete apt repository caches
-RUN rm -rf /var/lib/apt/lists/*
 
 # Load ROS environment at each run
 COPY ./ros_entrypoint.sh /
