@@ -37,25 +37,23 @@ RUN apt-get update && apt-get install -y \
     liblmdb-dev
 RUN apt-get update && apt-get install -y --no-install-recommends libboost-all-dev
 
-# Make catkin workspace
-RUN mkdir -p /root/catkin_ws/src
-RUN /bin/bash -c "source /opt/ros/melodic/setup.bash && cd /root/catkin_ws && catkin_make"
-
-# Download pwc_net_ros
-RUN cd /root/catkin_ws/src && git clone https://github.com/fujimo-t/pwc_net_ros.git
 # Download Caffe for FlowNet2
 RUN cd /root && git clone https://github.com/xmfbit/flownet2
 # Download PWC-Net
 RUN cd /root && git clone https://github.com/NVlabs/PWC-Net.git
-
 # Patch to Caffe from PWC-Net
 RUN cp /root/PWC-Net/Caffe/warping_code/warp_layer.cu /root/PWC-Net/Caffe/warping_code/warp_layer.cpp /root/flownet2/src/caffe/layers/
 RUN cp /root/PWC-Net/Caffe/warping_code/warp_layer.hpp /root/flownet2/include/caffe/layers/
 # Set make config to Caffe
-RUN cp /root/catkin_ws/src/pwc_net_ros/docker/caffe/Makefile.config /root/flownet2/
+COPY caffe/Makefile.config /root/flownet2/
 # Build Caffe for PWC-Net
-RUN cd /root/flownet2 && make all 
+RUN cd /root/flownet2 && make -j4 all
+
+# Make catkin workspace
+RUN mkdir -p /root/catkin_ws/src
+RUN /bin/bash -c "source /opt/ros/melodic/setup.bash && cd /root/catkin_ws && catkin_make"
 # Build PWC-Net ROS
+RUN cd /root/catkin_ws/src && git clone https://github.com/fujimo-t/pwc_net_ros.git
 RUN cd /root/catkin_ws/src && git clone https://github.com/ActiveIntelligentSystemsLab/ros_optical_flow.git
 RUN /bin/bash -c "source /opt/ros/melodic/setup.bash && source /root/catkin_ws/devel/setup.bash && cd /root/catkin_ws && rosdep install -r -y pwc_net"
 RUN /bin/bash -c "source /opt/ros/melodic/setup.bash && source /root/catkin_ws/devel/setup.bash && cd /root/catkin_ws && catkin_make"
