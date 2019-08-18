@@ -7,19 +7,21 @@ RUN echo 'Etc/UTC' > /etc/timezone && \
 
 # Install packages to add ROS repository
 RUN apt-get install -y dirmngr gnupg2
-
 # Add ROS repository
 RUN sh -c 'echo "deb http://packages.ros.org/ros/ubuntu bionic main" > /etc/apt/sources.list.d/ros-latest.list'
 # Keys for ROS repository
 RUN apt-key adv --keyserver 'hkp://keyserver.ubuntu.com:80' --recv-key C1CF6E31E6BADE8868B172B4F42ED6FBAB17C654
-
 # Install ROS bootstrap tools
 RUN apt-get update && apt-get install --no-install-recommends -y \
     python-rosdep \
     python-rosinstall \
     python-vcstools
+# Set up rosdep
+RUN rosdep init
+RUN rosdep update
 # Install ROS-Base packages
 RUN apt-get update && apt-get install -y ros-melodic-ros-base
+
 # Install packages to build caffe
 RUN apt-get update && apt-get install -y \
     libprotobuf-dev \
@@ -53,11 +55,7 @@ RUN cp /root/PWC-Net/Caffe/warping_code/warp_layer.hpp /root/flownet2/include/ca
 RUN cp /root/catkin_ws/src/pwc_net_ros/docker/caffe/Makefile.config /root/flownet2/
 # Build Caffe for PWC-Net
 RUN cd /root/flownet2 && make all 
-
-# Build pwc_net_ros
-RUN rosdep init
-RUN rosdep update
-
+# Build PWC-Net ROS
 RUN cd /root/catkin_ws/src && git clone https://github.com/ActiveIntelligentSystemsLab/ros_optical_flow.git
 RUN /bin/bash -c "source /opt/ros/melodic/setup.bash && source /root/catkin_ws/devel/setup.bash && cd /root/catkin_ws && rosdep install -r -y pwc_net"
 RUN /bin/bash -c "source /opt/ros/melodic/setup.bash && source /root/catkin_ws/devel/setup.bash && cd /root/catkin_ws && catkin_make"
