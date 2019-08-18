@@ -17,7 +17,7 @@ This uses [model definition](https://github.com/NVlabs/PWC-Net/blob/master/Caffe
 ```shell
 $ git clone https://github.com/fujimo-t/pwc_net_ros.git
 $ cd pwc_net_ros/docker
-# docker-compose up
+$ docker-compose up
 ```
 
 Then two windows open and you can see input image and visualized optical flow.
