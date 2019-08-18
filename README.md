@@ -20,6 +20,10 @@ $ cd pwc_net_ros/docker
 # docker-compose up
 ```
 
+Then two windows open and you can see input image and visualized optical flow.
+
+![result](image/test_result.png)
+
 ## pwc_net_node (Node)
 
 A node estimates dense optical flow from image topic.
