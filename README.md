@@ -6,8 +6,19 @@ This uses [model definition](https://github.com/NVlabs/PWC-Net/blob/master/Caffe
 
 ## Requirements
 
-* ROS Melodic
-* CUDA 10.1
+* Nvidia GPU
+* Docker
+* [nvidia-container-toolkit and nvidia-docker2](https://github.com/NVIDIA/nvidia-docker)
+
+  nvidia-docker2 is deprecated but it is needed for docker-compose with GPU
+
+## Testing
+
+```shell
+$ git clone https://github.com/fujimo-t/pwc_net_ros.git
+$ cd pwc_net_ros/docker
+# docker-compose up
+```
 
 ## pwc_net_node (Node)
 
