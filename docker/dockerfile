@@ -57,6 +57,8 @@ RUN cd /root/catkin_ws/src && git clone https://github.com/fujimo-t/pwc_net_ros.
 RUN cd /root/catkin_ws/src && git clone https://github.com/ActiveIntelligentSystemsLab/ros_optical_flow.git
 RUN /bin/bash -c "source /opt/ros/melodic/setup.bash && source /root/catkin_ws/devel/setup.bash && cd /root/catkin_ws && rosdep install -r -y pwc_net"
 RUN /bin/bash -c "source /opt/ros/melodic/setup.bash && source /root/catkin_ws/devel/setup.bash && cd /root/catkin_ws && catkin_make"
+# Create symbolic link to trained weight
+RUN ln -s /root/PWC-Net/Caffe/model/pwc_net.caffemodel /root/catkin_ws/src/pwc_net_ros/model/pwc_net.caffemodel
 
 # Load ROS environment at each run
 COPY ./ros_entrypoint.sh /
