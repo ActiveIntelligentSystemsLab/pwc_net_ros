@@ -60,7 +60,7 @@ RUN /bin/bash -c "source /opt/ros/melodic/setup.bash && source /root/catkin_ws/d
 # Create symbolic link to trained weight
 RUN ln -s /root/PWC-Net/Caffe/model/pwc_net.caffemodel /root/catkin_ws/src/pwc_net_ros/model/pwc_net.caffemodel
 # Patch to Caffe model
-RUN patch -o /root/catkin_ws/src/pwc_net_ros/model/pwc_net_test.prototxt /root/PWC-Net/model/pwc_net_test.prototxt /root/catkin_ws/src/pwc_net_ros/model/pwc_net_test.diff
+RUN patch -o /root/catkin_ws/src/pwc_net_ros/model/pwc_net_test.prototxt /root/PWC-Net/Caffe/model/pwc_net_test.prototxt /root/catkin_ws/src/pwc_net_ros/model/pwc_net_test.diff
 
 # Load ROS environment at each run
 COPY ./ros_entrypoint.sh /
