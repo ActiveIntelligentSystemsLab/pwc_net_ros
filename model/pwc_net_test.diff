@@ -1,0 +1,65 @@
+3c3
+<   type: "ImageData"
+---
+>   type: "Input"
+5,8c5,6
+<   top: "dummy1" 
+<   image_data_param {
+<     source: "tmp/img1.txt"
+<     batch_size: 1
+---
+>   input_param {
+>     shape: { dim: 1 dim: 3 dim: $TARGET_HEIGHT dim: $TARGET_WIDTH }
+13c11
+<   type: "ImageData"
+---
+>   type: "Input"
+15,18c13,14
+<   top: "dummy2" 
+<   image_data_param {
+<     source: "tmp/img2.txt"
+<     batch_size: 1
+---
+>   input_param {
+>     shape: { dim: 1 dim: 3 dim: $TARGET_HEIGHT dim: $TARGET_WIDTH }
+21,32d16
+< layer {
+<   name: "dummy1" 
+<   type: "Silence" 
+<   bottom: "dummy1" 
+< }
+< 
+< layer {
+<   name: "dummy2"
+<   type: "Silence"
+<   bottom: "dummy2"
+< }
+< 
+2927,2936d2910
+< # layer {
+< #   name: "Eltwise4"
+< #   type: "Eltwise"
+< #   bottom: "predict_flow2"
+< #   top: "blob44"
+< #   eltwise_param {
+< #     operation: SUM
+< #     coeff: 20.0
+< #   }
+< # }
+2968,2980c2942
+< }
+< layer {
+<   name: "FLOWriter"
+<   type: "FLOWriter"
+<   bottom: "predict_flow_final"
+<   writer_param {
+<     folder: "./tmp"
+<     prefix: "pwc-net-pred-"
+<     suffix: ""
+<     scale: 1.0
+<   }
+< }
+< 
+---
+> }
+\ No newline at end of file
