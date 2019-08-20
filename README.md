@@ -17,6 +17,7 @@ This uses [model definition](https://github.com/NVlabs/PWC-Net/blob/master/Caffe
 ```shell
 $ git clone https://github.com/fujimo-t/pwc_net_ros.git
 $ cd pwc_net_ros/docker
+$ xhost +local:root # To use GUI, see http://wiki.ros.org/docker/Tutorials/GUI#The_simple_way
 $ docker-compose up
 ```
 
