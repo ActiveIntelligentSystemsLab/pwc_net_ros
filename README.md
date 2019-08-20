@@ -8,9 +8,10 @@ This uses [model definition](https://github.com/NVlabs/PWC-Net/blob/master/Caffe
 
 * Nvidia GPU
 * Docker
+* Docker Compose
 * [nvidia-container-toolkit and nvidia-docker2](https://github.com/NVIDIA/nvidia-docker)
 
-  nvidia-docker2 is deprecated but it is needed for docker-compose with GPU
+  nvidia-docker2 is deprecated but it is needed for Docker Compose with GPU
 
 ## Testing
 
