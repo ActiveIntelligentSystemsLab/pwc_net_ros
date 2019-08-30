@@ -50,13 +50,22 @@ COPY caffe/Makefile.config /root/flownet2/
 RUN cd /root/flownet2 && make -j4 all
 
 # Make catkin workspace
+RUN apt-get update && \
+    apt-get install -y python-catkin-tools
 RUN mkdir -p /root/catkin_ws/src
-RUN /bin/bash -c "source /opt/ros/melodic/setup.bash && cd /root/catkin_ws && catkin_make"
+WORKDIR /root/catkin_ws
+RUN bash -c "source /opt/ros/melodic/setup.bash && \
+             catkin init && \
+             catkin config --cmake-args -DCMAKE_BUILD_TYPE=Release"
+
 # Build PWC-Net ROS
-RUN cd /root/catkin_ws/src && git clone https://github.com/fujimo-t/pwc_net_ros.git
-RUN cd /root/catkin_ws/src && git clone https://github.com/ActiveIntelligentSystemsLab/ros_optical_flow.git
-RUN /bin/bash -c "source /opt/ros/melodic/setup.bash && source /root/catkin_ws/devel/setup.bash && cd /root/catkin_ws && rosdep install -r -y pwc_net"
-RUN /bin/bash -c "source /opt/ros/melodic/setup.bash && source /root/catkin_ws/devel/setup.bash && cd /root/catkin_ws && catkin_make -DCMAKE_BUILD_TYPE=Release"
+RUN git clone https://github.com/fujimo-t/pwc_net_ros.git src/pwc_net_ros
+RUN git clone https://github.com/ActiveIntelligentSystemsLab/ros_optical_flow.git src/ros_optical_flow
+RUN /bin/bash -c "source /opt/ros/melodic/setup.bash && \
+                  rosdep install --from-paths src -r -y"
+RUN /bin/bash -c "source /opt/ros/melodic/setup.bash && \
+                  catkin build"
+
 # Create symbolic link to trained weight
 RUN ln -s /root/PWC-Net/Caffe/model/pwc_net.caffemodel /root/catkin_ws/src/pwc_net_ros/model/pwc_net.caffemodel
 # Patch to Caffe model
