@@ -68,3 +68,10 @@ A node estimates dense optical flow from image topic.
 
 Nodelet version of [pwc_net_node](#pwc_net_node-(Node)).
 Parameters and topics are same to it.
+
+## License
+
+See [LICENSE](LICENSE).
+
+This repository doesn't directly contain [PWC-Net](https://github.com/NVlabs/PWC-Net) code but used with it.
+See [LICENSE.md](https://github.com/NVlabs/PWC-Net/blob/master/LICENSE.md) about PWC-Net's license.
