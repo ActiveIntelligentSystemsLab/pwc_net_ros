@@ -59,7 +59,7 @@ RUN bash -c "source /opt/ros/melodic/setup.bash && \
              catkin config --cmake-args -DCMAKE_BUILD_TYPE=Release"
 
 # Build PWC-Net ROS
-RUN git clone https://github.com/fujimo-t/pwc_net_ros.git src/pwc_net_ros
+RUN git clone https://github.com/ActiveIntelligentSystemsLab/pwc_net_ros.git src/pwc_net_ros
 RUN git clone https://github.com/ActiveIntelligentSystemsLab/ros_optical_flow.git src/ros_optical_flow
 RUN /bin/bash -c "source /opt/ros/melodic/setup.bash && \
                   rosdep install --from-paths src -r -y"
