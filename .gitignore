@@ -1,1 +1,3 @@
-model/tempotmp_model_file.prototxt
+model/pwc_net.caffemodel
+model/pwc_net_test.prototxt
+
