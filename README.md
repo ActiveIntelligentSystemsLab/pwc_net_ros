@@ -2,7 +2,7 @@
 
 ROS package for estimation of optical flow by [PWC-Net](https://github.com/NVlabs/PWC-Net).
 
-This uses [model definition](https://github.com/NVlabs/PWC-Net/blob/master/Caffe/model/pwc_net_test.prototxt) and [trained model](https://github.com/NVlabs/PWC-Net/blob/master/Caffe/model/pwc_net.caffemodel) from [official implementation by Caffe](https://github.com/NVlabs/PWC-Net/tree/master/Caffe).
+This uses [model definition](https://github.com/NVlabs/PWC-Net/blob/master/Caffe/model/pwc_net_test.prototxt) and [trained model](https://github.com/NVlabs/PWC-Net/blob/master/Caffe/model/pwc_net.caffemodel) from [official implementation by Caffe](https://github.com/NVlabs/PWC-Net/tree/master/Caffe). The model is [fine-tuned by Sintel, KITTI, and HD1K dataset](https://github.com/NVlabs/PWC-Net/issues/80).
 
 ## Requirements
 
