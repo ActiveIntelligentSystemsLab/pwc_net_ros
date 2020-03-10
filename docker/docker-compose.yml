@@ -10,7 +10,7 @@ services:
     build: .
     depends_on:
       - master
-    command: rqt 
+    command: rqt --perspective-file /root/catkin_ws/src/pwc_net_ros/rqt/test.perspective
     environment: 
       - ROS_HOSTNAME=pwc_rqt
       - ROS_MASTER_URI=http://pwc_master:11311
