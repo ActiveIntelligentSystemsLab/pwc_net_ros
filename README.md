@@ -13,7 +13,7 @@ This uses [model definition](https://github.com/NVlabs/PWC-Net/blob/master/Caffe
 
   nvidia-docker2 is deprecated but it is needed for Docker Compose with GPU
 
-## Testing
+## Run
 
 ```shell
 $ git clone https://github.com/fujimo-t/pwc_net_ros.git
@@ -22,9 +22,10 @@ $ xhost +local:root # To use GUI, see http://wiki.ros.org/docker/Tutorials/GUI#T
 $ docker-compose up
 ```
 
-Then two windows open and you can see input image and visualized optical flow.
-
-![result](image/test_result.png)
+Then containers is launched:
+* ROS master
+* rqt
+* terminal
 
 ## pwc_net_node (Node)
 

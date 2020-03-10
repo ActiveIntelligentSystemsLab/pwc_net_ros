@@ -1,12 +1,38 @@
 version: "2.3"
 services: 
-  pwc_net_ros:
+  master:
     build: .
-    container_name: pwc_net_ros
-    command: roslaunch pwc_net test.launch
-    runtime: nvidia
+    container_name: pwc_master
+    command: roscore
+
+  rqt:
+    container_name: pwc_rqt
+    build: .
+    depends_on:
+      - master
+    command: rqt 
     environment: 
+      - ROS_HOSTNAME=pwc_rqt
+      - ROS_MASTER_URI=http://pwc_master:11311
       - DISPLAY
       - QT_X11_NO_MITSHM=1
     volumes: 
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - root:/root
+
+  terminal:
+    build: .
+    container_name: pwc_terminal
+    command: lxterminal
+    runtime: nvidia
+    environment: 
+      - ROS_HOSTNAME=pwc_terminal
+      - ROS_MASTER_URI=http://pwc_master:11311
+      - DISPLAY
+      - QT_X11_NO_MITSHM=1
+    volumes: 
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - root:/root
+
+volumes: 
+  root:
