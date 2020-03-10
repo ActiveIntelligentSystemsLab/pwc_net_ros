@@ -10,12 +10,4 @@
     <remap from="flow" to="pwc_net/optical_flow"/>
     <param name="max_magnitude" value="10"/>
   </node>
-
-  <node name="input_viewer" pkg="image_view" type="image_view">
-    <remap from="image" to="stereo_robot/mobile_base/camera/left/image_raw"/>
-    <param name="image_transport" value="compressed"/>
-  </node>
-  <node name="output_viewer" pkg="image_view" type="image_view">
-    <remap from="image" to="dense_flow_view/flow_view"/>
-  </node>
 </launch>
