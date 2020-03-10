@@ -26,6 +26,13 @@ Then containers is launched:
 * ROS master
 * rqt
 * terminal
+  * To run command and ROS nodes
+
+To test pwc_net_ros, execute follow command in the container terminal:
+
+```shell
+$ roslaunch pwc_net test.launch
+```
 
 ## pwc_net_node (Node)
 
