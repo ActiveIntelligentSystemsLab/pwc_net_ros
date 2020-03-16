@@ -4,18 +4,19 @@ project(pwc_net CUDA CXX)
 find_package(catkin REQUIRED
   cv_bridge
   image_transport
-  nodelet
-  optical_flow_msgs
-  optical_flow_srvs
-  pluginlib
   roscpp
   sensor_msgs
 )
-
 find_package(OpenCV REQUIRED)
 
-catkin_package()
+catkin_package(
+  CATKIN_DEPENDS cv_bridge image_transport roscpp sensor_msgs
+  DEPENDS OpenCV
+  INCLUDE_DIRS include
+  LIBRARIES ${PROJECT_NAME}
+)
 
+# Path for flownet2 with PWC-Net's patch
 set(CAFFE_PATH /root/flownet2)
 
 include_directories(
@@ -26,17 +27,11 @@ include_directories(
   ${CAFFE_PATH}/build/src
 )
 
-add_library(${PROJECT_NAME}
-  src/${PROJECT_NAME}/pwc_net_nodelet.cu
-)
-
-add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-
+add_library(${PROJECT_NAME} src/pwc_net.cu)
+add_dependencies(${PROJECT_NAME} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(${PROJECT_NAME}
   ${catkin_LIBRARIES}
   ${OpenCV_LIBRARIES}
   ${CAFFE_PATH}/build/lib/libcaffe.so
 )
 
-add_executable(pwc_net_node src/pwc_net_node.cpp)
-target_link_libraries(pwc_net_node ${catkin_LIBRARIES})
