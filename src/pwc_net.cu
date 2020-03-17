@@ -4,13 +4,16 @@
 #include <ros/console.h>
 #include <ros/package.h>
 
-#include <cmath>
-#include <cstdlib>
+#include <caffe/caffe.hpp>
+#include <caffe/layers/input_layer.hpp>
+
 #include <fstream>
 #include <map>
-#include <vector>
 
 namespace pwc_net{
+
+// Put here to include pwc_net.h from non-CUDA project
+std::shared_ptr<caffe::Net<float>> net_;
 
 std::string PwcNet::generateTemporaryModelFile(const std::string &package_path) {
   std::string model_file_template = package_path + "/model/pwc_net_test.prototxt";
@@ -110,7 +113,7 @@ bool PwcNet::estimateOpticalFlow
   }
 
   // Convert cv::Mat to float and set to input layer
-  source_image.convertTo(dist_image, CV_32FC3);
+  source_image.convertTo(source_image, CV_32FC3);
   dist_image.convertTo(dist_image, CV_32FC3);
   setImagesToInputLayer(source_image, dist_image);
 
@@ -148,7 +151,7 @@ void PwcNet::initializeNetwork(int image_width, int image_height) {
   std::string temporary_model_file = generateTemporaryModelFile(package_path);
 
   ROS_INFO_NAMED("libpwc_net", "Loading temporary model file");
-  net_.reset(new caffe::Net<d_type_>(temporary_model_file, caffe::TEST));
+  net_.reset(new caffe::Net<float>(temporary_model_file, caffe::TEST));
 
   std::string trained_file = package_path + "/model/pwc_net.caffemodel";
   ROS_INFO_STREAM_NAMED("libpwc_net", "Loading trained file: " << trained_file);
@@ -159,7 +162,7 @@ void PwcNet::initializeNetwork(int image_width, int image_height) {
 
 void PwcNet::outputLayerToCvMat(cv::Mat& optical_flow)
 {
-  const boost::shared_ptr<caffe::Blob<d_type_>> output_blob = net_->blob_by_name(OUTPUT_BLOB_);
+  const boost::shared_ptr<caffe::Blob<float>> output_blob = net_->blob_by_name(OUTPUT_BLOB_);
 
   cv::Mat channels[2];
 
@@ -185,16 +188,16 @@ void PwcNet::setImagesToInputLayer(const cv::Mat& source_image, const cv::Mat& d
 
   // Set source image
   cv::split(source_image, channels); // Split to BGR channels
-  d_type_ *input_layer_blob = net_->blob_by_name(SOURCE_IMAGE_BLOB_)->mutable_cpu_data();
+  float *input_layer_blob = net_->blob_by_name(SOURCE_IMAGE_BLOB_)->mutable_cpu_data();
   // Store each channels to blob
   for (int i = 0; i < 3; i++)
-    memcpy(input_layer_blob + (channel_size * i), channels[i].ptr<d_type_>(), channel_size * sizeof(float));
+    memcpy(input_layer_blob + (channel_size * i), channels[i].ptr<float>(), channel_size * sizeof(float));
 
   // Set dist image
   cv::split(dist_image, channels);
   input_layer_blob = net_->blob_by_name(DIST_IMAGE_BLOB_)->mutable_cpu_data();
   for (int i = 0; i < 3; i++)
-    memcpy(input_layer_blob + (channel_size * i), channels[i].ptr<d_type_>(), channel_size * sizeof(float));
+    memcpy(input_layer_blob + (channel_size * i), channels[i].ptr<float>(), channel_size * sizeof(float));
 
   caffe::Caffe::set_mode(caffe::Caffe::GPU);
 }

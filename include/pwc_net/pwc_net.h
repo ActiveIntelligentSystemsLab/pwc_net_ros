@@ -2,18 +2,9 @@
 #define PWC_NET__PWC_NET_H_
 
 #include <ros/ros.h>
-#include <image_transport/image_transport.h>
-#include <nodelet/nodelet.h>
 #include <sensor_msgs/Image.h>
-#include <std_msgs/Header.h>
-
-#include <caffe/caffe.hpp>
-#include <caffe/layers/input_layer.hpp>
 
 #include <opencv2/opencv.hpp>
-
-#include <memory>
-#include <string>
 
 namespace pwc_net {
 
@@ -53,9 +44,6 @@ private:
    * @brief Original size of input image
    */
   int target_height_;
-
-  using d_type_ = float;
-  std::shared_ptr<caffe::Net<d_type_>> net_;
 
   /**
    * @brief Generate temporary model file from template

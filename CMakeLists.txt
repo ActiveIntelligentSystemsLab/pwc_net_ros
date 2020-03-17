@@ -35,3 +35,10 @@ target_link_libraries(${PROJECT_NAME}
   ${CAFFE_PATH}/build/lib/libcaffe.so
 )
 
+add_executable(sample_node
+  src/sample_node.cpp
+  src/sample_node_main.cpp
+)
+add_dependencies(sample_node ${PROJECT_NAME})
+target_link_libraries(sample_node ${PROJECT_NAME})
+
