@@ -15,8 +15,4 @@
   <depend>sensor_msgs</depend>
   <exec_depend>compressed_image_transport</exec_depend>
   <exec_depend>image_view</exec_depend>
-
-  <export>
-    <nodelet plugin="${prefix}/nodelet_plugins.xml"/>
-  </export>
 </package>
