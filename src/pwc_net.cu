@@ -7,6 +7,7 @@
 #include <caffe/caffe.hpp>
 #include <caffe/layers/input_layer.hpp>
 
+#include <cmath>
 #include <fstream>
 #include <map>
 
@@ -200,6 +201,37 @@ void PwcNet::setImagesToInputLayer(const cv::Mat& source_image, const cv::Mat& d
     memcpy(input_layer_blob + (channel_size * i), channels[i].ptr<float>(), channel_size * sizeof(float));
 
   caffe::Caffe::set_mode(caffe::Caffe::GPU);
+}
+
+void PwcNet::visualizeOpticalFlow
+(
+  const cv::Mat& optical_flow,
+  cv::Mat& visualized_optical_flow,
+  float max_magnitude
+) 
+{
+  cv::Mat hsv_image(optical_flow.rows, optical_flow.cols, CV_8UC3, cv::Vec3b(0, 0, 0));
+
+  int total_pixels = optical_flow.total();
+  for (int i = 0; i < total_pixels; i++)
+  {
+    const cv::Vec2f& flow_at_point = optical_flow.at<cv::Vec2f>(i);
+
+    float flow_magnitude = 
+      std::sqrt(flow_at_point[0]*flow_at_point[0] + flow_at_point[1]*flow_at_point[1]);
+    float flow_direction = std::atan2(flow_at_point[0], flow_at_point[1]);
+
+    uchar hue = (flow_direction / M_PI + 1.0) / 2.0 * 255;
+    uchar saturation = std::min(std::max(flow_magnitude / max_magnitude, 0.0f), 1.0f) * 255;
+    uchar value = 255;
+
+    cv::Vec3b &hsv = hsv_image.at<cv::Vec3b>(i);
+    hsv[0] = hue;
+    hsv[1] = saturation;
+    hsv[2] = value;
+  }
+
+  cv::cvtColor(hsv_image, visualized_optical_flow, cv::ColorConversionCodes::COLOR_HSV2BGR_FULL);
 }
 
 }

@@ -22,6 +22,7 @@ SampleNode::SampleNode() {
   image_sub_ = image_transport_->subscribe(image_topic, 1, &SampleNode::imageCallback, this);
   
   flow_pub_ = private_node_handle.advertise<sensor_msgs::Image>("optical_flow", 1);
+  visualized_flow_pub_ = private_node_handle.advertise<sensor_msgs::Image>("visualized_optical_flow", 1);
 }
 
 void SampleNode::imageCallback(const sensor_msgs::ImageConstPtr& image) {
@@ -31,11 +32,18 @@ void SampleNode::imageCallback(const sensor_msgs::ImageConstPtr& image) {
     bool success = pwc_net_.estimateOpticalFlow(*previous_image_, *image, optical_flow.image);
 
     if (success)
+    {
       flow_pub_.publish(optical_flow.toImageMsg());
+
+      cv_bridge::CvImage visualized_optical_flow(image->header, sensor_msgs::image_encodings::BGR8);
+      pwc_net_.visualizeOpticalFlow(optical_flow.image, visualized_optical_flow.image, 5.0f);
+
+      visualized_flow_pub_.publish(visualized_optical_flow.toImageMsg());
+    }
   }
   
   previous_image_ = image;
 }
 
+} // namespace pwc_net
 
-}

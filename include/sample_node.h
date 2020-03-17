@@ -14,6 +14,7 @@ private:
   std::shared_ptr<image_transport::ImageTransport> image_transport_;
   image_transport::Subscriber image_sub_;
   ros::Publisher flow_pub_;
+  ros::Publisher visualized_flow_pub_;
 
   PwcNet pwc_net_;
 

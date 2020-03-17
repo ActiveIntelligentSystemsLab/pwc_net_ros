@@ -87,6 +87,21 @@ public:
     cv::Mat& optical_flow
   ); 
   
+  /**
+   * @brief Visualize optical flow by HSV coloring
+   *
+   * Direction and magnitude of flow is represented as hue and saturation.
+   *
+   * @param optical_flow CV_32FC2. first channel is optical flow's x-axis component, second is y-axis.
+   * @param visualized_optical_flow CV_8UC3, BGR image.
+   * @param max_magnitude Optical flow's magnitude[pixel] mapped to maximum saturation
+   */
+  static void visualizeOpticalFlow
+  (
+    const cv::Mat& optical_flow,
+    cv::Mat& visualized_optical_flow,
+    float max_magnitude
+  ); 
 };
 
 } // end of pwc_net namespace
